@@ -1,10 +1,12 @@
 mod tower;
 mod game_assets;
+mod target;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use crate::game_assets::GameAssets;
-use crate::tower::{bullet_despawn, Lifetime, Tower, tower_shooting};
+use crate::target::{Health, move_targets, Target, target_death};
+use crate::tower::{Bullet, bullet_collision, bullet_despawn, Lifetime, move_bullets, Tower, tower_shooting};
 
 pub const WINDOW_WIDTH: f32 = 1920.;
 pub const WINDOW_HEIGHT: f32 = 1080.0;
@@ -28,7 +30,9 @@ fn main() {
 
         .register_type::<Tower>()
         .register_type::<Lifetime>()
-
+        .register_type::<Target>()
+        .register_type::<Health>()
+        .register_type::<Bullet>()
 
         .add_startup_system(spawn_basic_scene)
         .add_startup_system(spawn_camera)
@@ -36,6 +40,10 @@ fn main() {
 
         .add_system(tower_shooting)
         .add_system(bullet_despawn)
+        .add_system(move_targets)
+        .add_system(move_bullets)
+        .add_system(target_death)
+        .add_system(bullet_collision)
 
         .run();
 }
@@ -82,8 +90,21 @@ fn spawn_basic_scene(
         transform: Transform::from_xyz(0.0, 0.5, 0.0),
         ..default()
     })
-        .insert(Tower { shooting_timer: Timer::from_seconds(1.0, TimerMode::Repeating) })
+        .insert(Tower {
+            shooting_timer: Timer::from_seconds(1.0, TimerMode::Repeating),
+            bullet_offset: Vec3::new(0.0, 0.2, 0.5),
+        })
         .insert(Name::new("Cube"));
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.4 })),
+        material: materials.add(Color::rgb(0.67, 0.84, 0.92).into()),
+        transform: Transform::from_xyz(-2.0, 0.2, 1.5),
+        ..default()
+    })
+        .insert(Target { speed: 0.3 })
+        .insert(Health { value: 30 })
+        .insert(Name::new("Target"));
 
     commands.spawn(PointLightBundle {
         point_light: PointLight {
