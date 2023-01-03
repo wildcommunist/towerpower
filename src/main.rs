@@ -87,7 +87,19 @@ fn spawn_basic_scene(
             shooting_timer: Timer::from_seconds(1.0, TimerMode::Repeating),
             bullet_offset: Vec3::new(0.0, 0.2, 0.5),
         })
-        .insert(Name::new("Cube"));
+        .insert(Name::new("Tower"));
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::rgb(0.9, 0.54, 0.52).into()),
+        transform: Transform::from_xyz(1.2, 0.5, 0.0),
+        ..default()
+    })
+        .insert(Tower {
+            shooting_timer: Timer::from_seconds(1.0, TimerMode::Repeating),
+            bullet_offset: Vec3::new(0.0, 0.2, 0.5),
+        })
+        .insert(Name::new("Tower"));
 
     commands.spawn(PointLightBundle {
         point_light: PointLight {
