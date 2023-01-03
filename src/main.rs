@@ -1,4 +1,10 @@
+mod tower;
+mod game_assets;
+
 use bevy::prelude::*;
+use bevy_inspector_egui::WorldInspectorPlugin;
+use crate::game_assets::GameAssets;
+use crate::tower::{bullet_despawn, Lifetime, Tower, tower_shooting};
 
 pub const WINDOW_WIDTH: f32 = 1920.;
 pub const WINDOW_HEIGHT: f32 = 1080.0;
@@ -18,11 +24,30 @@ fn main() {
             },
             ..default()
         }))
-        .add_startup_system(spawn_camera)
+        .add_plugin(WorldInspectorPlugin::new())
+
+        .register_type::<Tower>()
+        .register_type::<Lifetime>()
+
+
         .add_startup_system(spawn_basic_scene)
+        .add_startup_system(spawn_camera)
+        .add_startup_system(asset_loading)
+
+        .add_system(tower_shooting)
+        .add_system(bullet_despawn)
+
         .run();
 }
 
+fn asset_loading(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+) {
+    commands.insert_resource(GameAssets {
+        bullet: assets.load("models/bullet.glb#Scene0")
+    });
+}
 
 fn spawn_camera(
     mut commands: Commands
@@ -32,7 +57,7 @@ fn spawn_camera(
             transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         }
-    );
+    ).insert(Name::new("Camera"));
 }
 
 //pbr bundle - Physically base rendering
@@ -49,12 +74,24 @@ fn spawn_basic_scene(
         mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
         material: materials.add(Color::rgb(0.67, 0.84, 0.52).into()),
         ..default()
-    });
+    }).insert(Name::new("Plane"));
 
     commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
         material: materials.add(Color::rgb(0.9, 0.54, 0.52).into()),
         transform: Transform::from_xyz(0.0, 0.5, 0.0),
         ..default()
-    });
+    })
+        .insert(Tower { shooting_timer: Timer::from_seconds(1.0, TimerMode::Repeating) })
+        .insert(Name::new("Cube"));
+
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            intensity: 750.,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_xyz(10.0, 8.0, 4.0),
+        ..default()
+    }).insert(Name::new("Light"));
 }
