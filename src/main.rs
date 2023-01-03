@@ -2,11 +2,14 @@ mod tower;
 mod game_assets;
 mod target;
 mod bullet;
+mod physics;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_rapier3d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 use crate::bullet::BulletPlugin;
 use crate::game_assets::GameAssets;
+use crate::physics::PhysicsPlugin;
 use crate::target::{Health, Target, TargetPlugin};
 use crate::tower::{Tower, TowerPlugin};
 
@@ -29,9 +32,14 @@ fn main() {
             ..default()
         }))
         .add_plugin(WorldInspectorPlugin::new())
+
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
+
         .add_plugin(TowerPlugin)
         .add_plugin(BulletPlugin)
         .add_plugin(TargetPlugin)
+        .add_plugin(PhysicsPlugin)
 
         .add_startup_system(spawn_basic_scene)
         .add_startup_system(spawn_camera)

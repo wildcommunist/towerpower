@@ -3,7 +3,8 @@ use bevy::time::Timer;
 use bevy::utils::FloatOrd;
 use crate::bullet::{Bullet, Lifetime};
 use crate::game_assets::GameAssets;
-use crate::target::{ Target};
+use crate::physics::PhysicsBundle;
+use crate::target::{Target};
 
 pub struct TowerPlugin;
 
@@ -56,7 +57,9 @@ fn tower_shooting(
                                 direction,
                                 speed: 2.9,
                             })
-                            .insert(Name::new("Bullet"));
+                            .insert(Name::new("Bullet"))
+                            .insert(PhysicsBundle::moving_entity(Vec3::new(0.2, 0.2, 0.2)));
+                        ;
                     });
             }
         }

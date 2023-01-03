@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::game_assets::GameAssets;
+use crate::physics::PhysicsBundle;
 
 pub struct TargetPlugin;
 
@@ -55,8 +56,9 @@ fn spawn_targets(
             ..default()
         })
             .insert(Movable)
-            .insert(Target { speed: 0.3 })
-            .insert(Health { value: 3 })
+            .insert(Target { speed: 0.1 })
+            .insert(Health { value: 30 })
+            .insert(PhysicsBundle::moving_entity(Vec3::new(0.4, 0.4, 0.4)))
             .insert(Name::new("Target"));
     }
 }

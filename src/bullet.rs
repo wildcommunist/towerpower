@@ -10,7 +10,7 @@ impl Plugin for BulletPlugin {
             .register_type::<Lifetime>()
             .add_system(move_bullets)
             .add_system(bullet_despawn)
-            .add_system(bullet_collision)
+            //.add_system(bullet_collision)
         ;
     }
 }
