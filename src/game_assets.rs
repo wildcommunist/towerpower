@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-#[derive(Resource)]
+#[derive(Resource, Reflect, Default)]
+#[reflect(Resource)]
 pub struct GameAssets {
-    pub(crate) bullet: Handle<Scene>,
+    pub bullet: Handle<Scene>,
+    pub mob_spawn_delay: Timer,
 }

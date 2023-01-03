@@ -5,7 +5,7 @@ mod target;
 use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use crate::game_assets::GameAssets;
-use crate::target::{Health, move_targets, Target, target_death};
+use crate::target::{Health, move_targets, spawn_targets, Target, target_death};
 use crate::tower::{Bullet, bullet_collision, bullet_despawn, Lifetime, move_bullets, Tower, tower_shooting};
 
 pub const WINDOW_WIDTH: f32 = 1920.;
@@ -44,6 +44,7 @@ fn main() {
         .add_system(move_bullets)
         .add_system(target_death)
         .add_system(bullet_collision)
+        .add_system(spawn_targets)
 
         .run();
 }
@@ -53,7 +54,8 @@ fn asset_loading(
     assets: Res<AssetServer>,
 ) {
     commands.insert_resource(GameAssets {
-        bullet: assets.load("models/bullet.glb#Scene0")
+        bullet: assets.load("models/bullet.glb#Scene0"),
+        mob_spawn_delay: Timer::from_seconds(2., TimerMode::Repeating),
     });
 }
 
@@ -95,16 +97,6 @@ fn spawn_basic_scene(
             bullet_offset: Vec3::new(0.0, 0.2, 0.5),
         })
         .insert(Name::new("Cube"));
-
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.4 })),
-        material: materials.add(Color::rgb(0.67, 0.84, 0.92).into()),
-        transform: Transform::from_xyz(-2.0, 0.2, 1.5),
-        ..default()
-    })
-        .insert(Target { speed: 0.3 })
-        .insert(Health { value: 30 })
-        .insert(Name::new("Target"));
 
     commands.spawn(PointLightBundle {
         point_light: PointLight {
