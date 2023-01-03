@@ -1,1 +1,2 @@
 # TowerPower
+A simple 3D tower defence game created using the excellent online tutorial by [Logic Projects](https://www.youtube.com/watch?v=_uKWIYEGBjs&list=PLT_D88-MTFOPPl75g4WshL1Gx2bnGTUkz) on YouTube. 
