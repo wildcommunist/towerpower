@@ -3,11 +3,13 @@ mod game_assets;
 mod target;
 mod bullet;
 mod physics;
+mod camera;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 use crate::bullet::BulletPlugin;
+use crate::camera::CameraPlugin;
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsPlugin;
 use crate::target::{Health, Target, TargetPlugin};
@@ -36,14 +38,15 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default())
 
+        .add_plugin(CameraPlugin)
         .add_plugin(TowerPlugin)
         .add_plugin(BulletPlugin)
         .add_plugin(TargetPlugin)
         .add_plugin(PhysicsPlugin)
 
-        .add_startup_system(spawn_basic_scene)
         .add_startup_system(spawn_camera)
         .add_startup_system(asset_loading)
+        .add_startup_system(spawn_basic_scene)
 
         .run();
 }
@@ -54,6 +57,7 @@ fn asset_loading(
 ) {
     commands.insert_resource(GameAssets {
         bullet: assets.load("models/bullet.glb#Scene0"),
+        pedestal: assets.load("models/pedestal.glb#Scene0"),
         mob_spawn_delay: Timer::from_seconds(2., TimerMode::Repeating),
     });
 }
@@ -78,9 +82,10 @@ fn spawn_basic_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    assets: Res<AssetServer>,
 ) {
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+        mesh: meshes.add(Mesh::from(shape::Plane { size: 50.0 })),
         material: materials.add(Color::rgb(0.67, 0.84, 0.52).into()),
         ..default()
     }).insert(Name::new("Plane"));
@@ -97,17 +102,12 @@ fn spawn_basic_scene(
         })
         .insert(Name::new("Tower"));
 
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        material: materials.add(Color::rgb(0.9, 0.54, 0.52).into()),
-        transform: Transform::from_xyz(1.2, 0.5, 0.0),
+    commands.spawn(SceneBundle {
+        scene: assets.load("models/pedestal.glb#Scene0"),
+        transform: Transform::from_xyz(1.5, 0.15, 0.0),
         ..default()
     })
-        .insert(Tower {
-            shooting_timer: Timer::from_seconds(1.0, TimerMode::Repeating),
-            bullet_offset: Vec3::new(0.0, 0.2, 0.5),
-        })
-        .insert(Name::new("Tower"));
+        .insert(Name::new("Pedestal"));
 
     commands.spawn(PointLightBundle {
         point_light: PointLight {
