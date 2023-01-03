@@ -1,6 +1,20 @@
 use bevy::prelude::*;
 use crate::game_assets::GameAssets;
 
+pub struct TargetPlugin;
+
+impl Plugin for TargetPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .register_type::<Target>()
+            .register_type::<Health>()
+            .add_system(spawn_targets)
+            .add_system(move_targets)
+            .add_system(target_death)
+        ;
+    }
+}
+
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
 pub struct Target {
@@ -16,7 +30,7 @@ pub struct Health {
 #[derive(Component)]
 pub struct Movable;
 
-pub fn move_targets(
+fn move_targets(
     mut targets: Query<(&Target, &mut Transform), (With<Health>, With<Movable>)>,
     time: Res<Time>,
 ) {
@@ -25,7 +39,7 @@ pub fn move_targets(
     }
 }
 
-pub fn spawn_targets(
+fn spawn_targets(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -47,7 +61,7 @@ pub fn spawn_targets(
     }
 }
 
-pub fn target_death(
+fn target_death(
     mut commands: Commands,
     targets: Query<(Entity, &Health), With<Target>>,
 ) {

@@ -1,12 +1,14 @@
 mod tower;
 mod game_assets;
 mod target;
+mod bullet;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
+use crate::bullet::BulletPlugin;
 use crate::game_assets::GameAssets;
-use crate::target::{Health, move_targets, spawn_targets, Target, target_death};
-use crate::tower::{Bullet, bullet_collision, bullet_despawn, Lifetime, move_bullets, Tower, tower_shooting};
+use crate::target::{Health, Target, TargetPlugin};
+use crate::tower::{Tower, TowerPlugin};
 
 pub const WINDOW_WIDTH: f32 = 1920.;
 pub const WINDOW_HEIGHT: f32 = 1080.0;
@@ -27,24 +29,13 @@ fn main() {
             ..default()
         }))
         .add_plugin(WorldInspectorPlugin::new())
-
-        .register_type::<Tower>()
-        .register_type::<Lifetime>()
-        .register_type::<Target>()
-        .register_type::<Health>()
-        .register_type::<Bullet>()
+        .add_plugin(TowerPlugin)
+        .add_plugin(BulletPlugin)
+        .add_plugin(TargetPlugin)
 
         .add_startup_system(spawn_basic_scene)
         .add_startup_system(spawn_camera)
         .add_startup_system(asset_loading)
-
-        .add_system(tower_shooting)
-        .add_system(bullet_despawn)
-        .add_system(move_targets)
-        .add_system(move_bullets)
-        .add_system(target_death)
-        .add_system(bullet_collision)
-        .add_system(spawn_targets)
 
         .run();
 }
