@@ -5,7 +5,9 @@ mod bullet;
 mod physics;
 mod camera;
 
+use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
+use bevy_mod_picking::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 use crate::bullet::BulletPlugin;
@@ -37,6 +39,7 @@ fn main() {
 
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugins(DefaultPickingPlugins)
 
         .add_plugin(CameraPlugin)
         .add_plugin(TowerPlugin)
@@ -45,7 +48,7 @@ fn main() {
         .add_plugin(PhysicsPlugin)
 
         .add_startup_system(spawn_camera)
-        .add_startup_system(asset_loading)
+        .add_startup_system_to_stage(StartupStage::PreStartup, asset_loading)
         .add_startup_system(spawn_basic_scene)
 
         .run();
@@ -73,7 +76,9 @@ fn spawn_camera(
             transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         }
-    ).insert(Name::new("Camera"));
+    )
+        .insert(PickingCameraBundle::default())
+        .insert(Name::new("Camera"));
 }
 
 //pbr bundle - Physically base rendering
@@ -87,30 +92,46 @@ fn spawn_basic_scene(
     mut materials: ResMut<Assets<StandardMaterial>>,
     assets: Res<AssetServer>,
 ) {
+    let default_collider_color: Handle<StandardMaterial> = materials.add(
+        Color::rgba(0.3, 0.3, 0.3, 0.3).into()
+    );
+    let selected_collider_color: Handle<StandardMaterial> = materials.add(
+        Color::rgba(0.3, 0.9, 0.3, 0.9).into()
+    );
+
+    // Ground plane
     commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 50.0 })),
         material: materials.add(Color::rgb(0.67, 0.84, 0.52).into()),
         ..default()
     }).insert(Name::new("Plane"));
 
-    commands.spawn(SceneBundle {
-        scene: assets.load("models/tower_1.glb#Scene0"),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
-        ..default()
-    })
-        .insert(Tower {
-            shooting_timer: Timer::from_seconds(0.2, TimerMode::Repeating),
-            bullet_offset: Vec3::new(0.0, 1.0, 0.0),
+    // Create an empty, to store our children
+    commands.spawn(SpatialBundle::from_transform(
+        Transform::from_xyz(0.0, 0.8, 0.0)
+    ))
+        .insert(Name::new("Tower_base"))
+        .insert(meshes.add(shape::Capsule::default().into()))
+        .insert(NotShadowCaster)
+        .insert(PickableBundle::default())
+        .insert(Highlighting {
+            initial: default_collider_color.clone(),
+            hovered: Some(selected_collider_color.clone()),
+            pressed: Some(selected_collider_color.clone()),
+            selected: Some(selected_collider_color),
         })
-        .insert(Name::new("Tower"));
+        .insert(default_collider_color)
+        .with_children(|commands| {
+            // Tower pedestal
+            commands.spawn(SceneBundle {
+                scene: assets.load("models/pedestal.glb#Scene0"),
+                transform: Transform::from_xyz(0.0, -0.9, 0.0),
+                ..default()
+            })
+                .insert(Name::new("Pedestal"));
+        });
 
-    commands.spawn(SceneBundle {
-        scene: assets.load("models/pedestal.glb#Scene0"),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
-        ..default()
-    })
-        .insert(Name::new("Pedestal"));
-
+    // Light
     commands.spawn(PointLightBundle {
         point_light: PointLight {
             intensity: 750.,

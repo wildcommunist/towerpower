@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::time::Timer;
 use bevy::utils::FloatOrd;
+use bevy_mod_picking::Selection;
 use crate::bullet::{Bullet, Lifetime};
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;
@@ -13,6 +14,7 @@ impl Plugin for TowerPlugin {
         app
             .register_type::<Tower>()
             .add_system(tower_shooting)
+            .add_system(build_tower)
         ;
     }
 }
@@ -64,4 +66,50 @@ fn tower_shooting(
             }
         }
     }
+}
+
+fn build_tower(
+    mut commands: Commands,
+    selection: Query<(Entity, &Selection, &Transform)>,
+    keyboard: Res<Input<KeyCode>>,
+    assets: Res<GameAssets>,
+) {
+    if keyboard.just_pressed(KeyCode::Space) {
+        for (entity, selection, transform) in &selection {
+            if selection.selected() {
+                commands.entity(entity).despawn_recursive();
+                spawn_tower(&mut commands, &assets, transform.translation);
+            }
+        }
+    }
+}
+
+fn spawn_tower(
+    commands: &mut Commands,
+    assets: &GameAssets,
+    position: Vec3,
+) -> Entity {
+    commands
+        .spawn(SpatialBundle::from_transform(
+            Transform::from_translation(position)
+        ))
+        .insert(Name::new("Zap Tower"))
+        .insert(Tower {
+            shooting_timer: Timer::from_seconds(0.2, TimerMode::Repeating),
+            bullet_offset: Vec3::new(0.0, 0., 0.0),
+        })
+        .with_children(|commands| {
+            commands.spawn(SceneBundle {
+                scene: assets.pedestal.clone(),
+                transform: Transform::from_xyz(0.0, -0.9, 0.0),
+                ..default()
+            })
+                .insert(Name::new("Pedestal"));
+            commands.spawn(SceneBundle {
+                scene: assets.tower.clone(),
+                transform: Transform::from_xyz(0.0, -1., 0.0),
+                ..default()
+            })
+                .insert(Name::new("Tower base"));
+        }).id()
 }

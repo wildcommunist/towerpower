@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_mod_picking::Selection;
 
 const CAMERA_SPEED: f32 = 3.0;
 const CAMERA_ROTATE_SPEED: f32 = 1.65;
@@ -7,7 +8,10 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(camera_controls);
+        app
+            .add_system(camera_controls)
+            .add_system(what_is_selected)
+        ;
     }
 }
 
@@ -46,5 +50,15 @@ fn camera_controls(
 
     if keyboard.pressed(KeyCode::E) {
         camera.rotate_axis(Vec3::Y, -CAMERA_ROTATE_SPEED * time.delta_seconds());
+    }
+}
+
+fn what_is_selected(
+    selection: Query<(&Name, &Selection)>
+) {
+    for (name, selection) in &selection {
+        if selection.selected() {
+            // this is what we have selected
+        }
     }
 }
