@@ -49,16 +49,15 @@ fn spawn_targets(
 ) {
     assets.mob_spawn_delay.tick(time.delta());
     if assets.mob_spawn_delay.just_finished() {
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.4 })),
-            material: materials.add(Color::rgb(0.67, 0.84, 0.92).into()),
+        commands.spawn(SceneBundle {
+            scene: assets.enemy.clone(),
             transform: Transform::from_xyz(-2.0, 0.2, 1.5),
             ..default()
         })
             .insert(Movable)
-            .insert(Target { speed: 0.1 })
-            .insert(Health { value: 30 })
-            .insert(PhysicsBundle::moving_entity(Vec3::new(0.4, 0.4, 0.4)))
+            .insert(Target { speed: 1.4 })
+            .insert(Health { value: 4 })
+            .insert(PhysicsBundle::moving_entity(Vec3::new(0.24, 0.24, 0.05)))
             .insert(Name::new("Target"));
     }
 }

@@ -58,7 +58,10 @@ fn asset_loading(
     commands.insert_resource(GameAssets {
         bullet: assets.load("models/bullet.glb#Scene0"),
         pedestal: assets.load("models/pedestal.glb#Scene0"),
-        mob_spawn_delay: Timer::from_seconds(2., TimerMode::Repeating),
+        tower: assets.load("models/tower_1.glb#Scene0"),
+        enemy: assets.load("models/enemy.glb#Scene0"),
+        mob_spawn_delay: Timer::from_seconds(1.5, TimerMode::Repeating),
+
     });
 }
 
@@ -90,21 +93,20 @@ fn spawn_basic_scene(
         ..default()
     }).insert(Name::new("Plane"));
 
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        material: materials.add(Color::rgb(0.9, 0.54, 0.52).into()),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
+    commands.spawn(SceneBundle {
+        scene: assets.load("models/tower_1.glb#Scene0"),
+        transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     })
         .insert(Tower {
-            shooting_timer: Timer::from_seconds(1.0, TimerMode::Repeating),
-            bullet_offset: Vec3::new(0.0, 0.2, 0.5),
+            shooting_timer: Timer::from_seconds(0.2, TimerMode::Repeating),
+            bullet_offset: Vec3::new(0.0, 1.0, 0.0),
         })
         .insert(Name::new("Tower"));
 
     commands.spawn(SceneBundle {
         scene: assets.load("models/pedestal.glb#Scene0"),
-        transform: Transform::from_xyz(1.5, 0.15, 0.0),
+        transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     })
         .insert(Name::new("Pedestal"));

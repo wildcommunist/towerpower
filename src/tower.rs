@@ -51,11 +51,11 @@ fn tower_shooting(
                             ..default()
                         })
                             .insert(Lifetime {
-                                timer: Timer::from_seconds(2.5, TimerMode::Once)
+                                timer: Timer::from_seconds(0.5, TimerMode::Once)
                             })
                             .insert(Bullet {
                                 direction,
-                                speed: 2.9,
+                                speed: 10.,
                             })
                             .insert(Name::new("Bullet"))
                             .insert(PhysicsBundle::moving_entity(Vec3::new(0.2, 0.2, 0.2)));
