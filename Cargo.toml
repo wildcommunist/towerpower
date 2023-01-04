@@ -18,3 +18,4 @@ bevy = { version = "0.9", features = ["dynamic"] } # remove dynamic prior to pub
 bevy-inspector-egui = "0.15.0"
 bevy_rapier3d = { version = "0.19", features = ["simd-stable", "debug-render"] }
 bevy_mod_picking = "0.11.0"
+strum = { version = "0.24", features = ["derive"] }

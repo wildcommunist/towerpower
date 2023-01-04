@@ -4,6 +4,7 @@ mod target;
 mod bullet;
 mod physics;
 mod camera;
+mod ui;
 
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -14,8 +15,9 @@ use crate::bullet::BulletPlugin;
 use crate::camera::CameraPlugin;
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsPlugin;
-use crate::target::{Health, Target, TargetPlugin};
-use crate::tower::{Tower, TowerPlugin};
+use crate::target::{Target, TargetPlugin};
+use crate::tower::{TowerPlugin};
+use crate::ui::GameUiPlugin;
 
 pub const WINDOW_WIDTH: f32 = 1920.;
 pub const WINDOW_HEIGHT: f32 = 1080.0;
@@ -46,6 +48,7 @@ fn main() {
         .add_plugin(BulletPlugin)
         .add_plugin(TargetPlugin)
         .add_plugin(PhysicsPlugin)
+        .add_plugin(GameUiPlugin)
 
         .add_startup_system(spawn_camera)
         .add_startup_system_to_stage(StartupStage::PreStartup, asset_loading)
