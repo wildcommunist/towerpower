@@ -78,6 +78,7 @@ fn asset_loading(
         mob_spawn_delay: Timer::from_seconds(1.5, TimerMode::Repeating),
         game_font: assets.load("fonts/minecraft_font.ttf"),
         enemy_death_sounds: assets.load("sounds/pop-39222.ogg"),
+        tower_place_sound: assets.load("sounds/bricks-104933.ogg"),
     });
 }
 

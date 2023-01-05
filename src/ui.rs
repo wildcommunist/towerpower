@@ -187,6 +187,7 @@ fn tower_button_clicked(
     selections: Query<(Entity, &Selection, &Transform)>,
     mut player: Query<&mut Player>,
     assets: Res<GameAssets>,
+    audio: Res<Audio>,
 ) {
     let mut player = player.single_mut();
     for (interaction, tower_type, button_state) in &interactions {
@@ -199,6 +200,7 @@ fn tower_button_clicked(
                                 warn!("Player balance overflow error");
                             }
                             Some(_) => {
+                                audio.play(assets.tower_place_sound.clone());
                                 commands.entity(entity).despawn_recursive();
                                 spawn_tower(&mut commands, &assets, transform.translation, *tower_type);
                             }

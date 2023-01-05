@@ -10,4 +10,5 @@ pub struct GameAssets {
     pub mob_spawn_delay: Timer,
     pub game_font: Handle<Font>,
     pub enemy_death_sounds: Handle<AudioSource>,
+    pub tower_place_sound: Handle<AudioSource>,
 }

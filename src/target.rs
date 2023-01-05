@@ -1,4 +1,5 @@
 use bevy::math::Vec3Swizzles;
+use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;
@@ -25,6 +26,9 @@ impl Plugin for TargetPlugin {
                 ]
             })
 
+            .add_system_set(SystemSet::on_enter(GameState::Gameplay)
+                .with_system(show_waypoints)
+            )
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(spawn_targets)
@@ -77,6 +81,27 @@ fn move_targets(
             // TODO: Reached end of path, maybe emit an event that we are done
             target.path_index += 1;
         }
+    }
+}
+
+fn show_waypoints(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    path: Res<TargetPath>,
+) {
+    for wp in &path.waypoints {
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
+            material: materials.add(Color::rgba(1., 0.063, 0.941, 0.65).into()),
+            transform: Transform {
+                translation: Vec3::new(wp.x, 0.2, wp.y),
+                ..default()
+            },
+            ..default()
+        })
+            .insert(NotShadowCaster)
+            .insert(Name::new("_waypoint"));
     }
 }
 

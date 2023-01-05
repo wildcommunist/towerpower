@@ -142,6 +142,7 @@ fn tower_shooting(
     }
 }
 
+// Legacy code
 fn build_tower(
     mut commands: Commands,
     selection: Query<(Entity, &Selection, &Transform)>,
