@@ -2,12 +2,19 @@ use bevy::ecs::query::QuerySingleError;
 use bevy::prelude::*;
 use bevy_mod_picking::Selection;
 use crate::game_assets::GameAssets;
+use crate::player::Player;
 use crate::states::GameState;
 use crate::tower::{spawn_tower, TowerType};
 
 #[derive(Component)]
 pub struct TowerUIRoot;
 
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct TowerButtonState {
+    cost: u32,
+    affordable: bool,
+}
 
 pub struct GameUiPlugin;
 
@@ -18,6 +25,8 @@ impl Plugin for GameUiPlugin {
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(create_ui_on_selection)
                     .with_system(tower_button_clicked)
+                    .with_system(update_tower_button_states)
+                    .with_system(update_tower_button_states.after(create_ui_on_selection)) // Make sure we update the state after the UI has been created
             )
         ;
     }
@@ -51,8 +60,10 @@ fn create_ui(
     commands: &mut Commands,
     assets: &AssetServer,
 ) {
-    let towers = [TowerType::Lazer, TowerType::Cannon, TowerType::Rock];
-    let button_icons: [Handle<Image>; 3] = [
+    let tower_types = [TowerType::Lazer, TowerType::Cannon, TowerType::Rock];
+    let tower_costs = [1, 2, 5];
+
+    let tower_icons: [Handle<Image>; 3] = [
         assets.load("images/rock_tower_icon.png"),
         assets.load("images/rock_tower_icon.png"),
         assets.load("images/rock_tower_icon.png"),
@@ -69,7 +80,7 @@ fn create_ui(
         .insert(TowerUIRoot)
         .insert(Name::new("UI_Root"))
         .with_children(|commands| {
-            for i in 0..towers.len() {
+            for i in 0..tower_types.len() {
                 commands.spawn(ButtonBundle {
                     style: Style {
                         size: Size::new(Val::Percent(15.0 * 9.0 / 16.0), Val::Percent(15.0)),
@@ -77,29 +88,56 @@ fn create_ui(
                         margin: UiRect::all(Val::Px(5.0)),
                         ..default()
                     },
-                    image: button_icons[i].clone().into(),
+                    image: tower_icons[i].clone().into(),
                     ..default()
                 })
-                    .insert(Name::new(format!("Tower_{:?}", towers[i])))
-                    .insert(towers[i]);
+                    .insert(TowerButtonState {
+                        cost: tower_costs[i],
+                        affordable: false,
+                    })
+                    .insert(Name::new(format!("Tower_{:?}", tower_types[i])))
+                    .insert(tower_types[i]);
             }
         });
 }
 
 fn tower_button_clicked(
-    interactions: Query<(&Interaction, &TowerType), Changed<Interaction>>, // Query will return ONLY changed interactions
+    interactions: Query<(&Interaction, &TowerType, &TowerButtonState), Changed<Interaction>>, // Query will return ONLY changed interactions
     mut commands: Commands,
     selections: Query<(Entity, &Selection, &Transform)>,
+    mut player: Query<&mut Player>,
     assets: Res<GameAssets>,
 ) {
-    for (interaction, tower_type) in &interactions {
+    let mut player = player.single_mut();
+    for (interaction, tower_type, button_state) in &interactions {
         if matches!(interaction, Interaction::Clicked) {
             for (entity, selection, transform) in &selections {
                 if selection.selected() {
-                    commands.entity(entity).despawn_recursive();
-                    spawn_tower(&mut commands, &assets, transform.translation, *tower_type);
+                    if player.get_funds() >= button_state.cost {
+                        commands.entity(entity).despawn_recursive();
+                        spawn_tower(&mut commands, &assets, transform.translation, *tower_type);
+                    } else {
+                        info!("Cannot afford {:?} tower, it costs {} but only have {}", tower_type,button_state.cost,player.get_funds());
+                    }
                 }
             }
+        }
+    }
+}
+
+fn update_tower_button_states(
+    mut buttons: Query<(&mut BackgroundColor, &mut TowerButtonState)>,
+    player: Query<&Player>,
+) {
+    let player = player.single();
+
+    for (mut button_tint, mut state) in &mut buttons {
+        if player.get_funds() >= state.cost {
+            state.affordable = true;
+            *button_tint = Color::WHITE.into();
+        } else {
+            state.affordable = true;
+            *button_tint = Color::DARK_GRAY.into();
         }
     }
 }

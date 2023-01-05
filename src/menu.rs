@@ -119,12 +119,14 @@ fn start_button_click(
     interactions: Query<&Interaction, (With<StartGameButton>, Changed<Interaction>)>,
     menu_root: Query<Entity, With<MenuUIRoot>>,
     mut game_state: ResMut<State<GameState>>,
+    mut mouse_input: ResMut<Input<MouseButton>>,
 ) {
     for interaction in &interactions {
         if matches!(interaction, Interaction::Clicked) {
             let root_entity = menu_root.single();
             commands.entity(root_entity).despawn_recursive();
             game_state.set(GameState::Gameplay).unwrap();
+            mouse_input.clone(); // This prevents the "click" from propogating and selecting a tower on screens
         }
     }
 }

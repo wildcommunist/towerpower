@@ -27,10 +27,20 @@ pub struct Player {
     lives: u32,
 }
 
+impl Player {
+    pub fn get_funds(&self) -> u32 {
+        self.money
+    }
+
+    pub fn get_lives(&self) -> u32 {
+        self.lives
+    }
+}
+
 fn spawn_player(
     mut commands: Commands
 ) {
-    commands.spawn((Player { money: 5, lives: 5 }, Name::new("Player")));
+    commands.spawn((Player { money: 0, lives: 5 }, Name::new("Player")));
 }
 
 fn give_money_on_kill(
