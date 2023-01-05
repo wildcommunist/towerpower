@@ -51,6 +51,20 @@ impl Player {
         }
         None
     }
+
+    pub fn damage(&mut self, amount: u32) -> Option<u32> {
+        println!("Subtracting {} lives. Current: {}", amount, &self.lives);
+        if let Some(new_health) = self.lives.checked_sub(amount) {
+            if new_health == 0 {
+                // player dies
+                //TODO: maybe handle death logic in a different way
+                return None;
+            }
+            self.lives = new_health;
+            return Some(self.lives);
+        }
+        None
+    }
 }
 
 fn spawn_player(

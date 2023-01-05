@@ -77,6 +77,7 @@ fn asset_loading(
         enemy: assets.load("models/enemy.glb#Scene0"),
         mob_spawn_delay: Timer::from_seconds(1.5, TimerMode::Repeating),
         game_font: assets.load("fonts/minecraft_font.ttf"),
+        enemy_death_sounds: assets.load("sounds/pop-39222.ogg"),
     });
 }
 

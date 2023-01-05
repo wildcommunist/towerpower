@@ -1,6 +1,8 @@
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;
+use crate::player::Player;
 use crate::states::GameState;
 
 pub struct TargetDeathEvent;
@@ -15,11 +17,20 @@ impl Plugin for TargetPlugin {
 
             .add_event::<TargetDeathEvent>()
 
+            .insert_resource(TargetPath { // load from file perhaps or download from server
+                waypoints: vec![
+                    Vec2::new(6.0, 2.0),
+                    Vec2::new(6.0, 6.0),
+                    Vec2::new(9.0, 9.0), // the final target should subtract player health
+                ]
+            })
+
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(spawn_targets)
                     .with_system(move_targets)
                     .with_system(target_death)
+                    .with_system(check_waypoints.after(move_targets))
             )
         ;
     }
@@ -29,6 +40,12 @@ impl Plugin for TargetPlugin {
 #[reflect(Component)]
 pub struct Target {
     pub speed: f32,
+    pub path_index: usize,
+}
+
+#[derive(Resource)]
+pub struct TargetPath {
+    waypoints: Vec<Vec2>,
 }
 
 #[derive(Component, Reflect, Default)]
@@ -41,18 +58,30 @@ pub struct Health {
 pub struct Movable;
 
 fn move_targets(
-    mut targets: Query<(&Target, &mut Transform), (With<Health>, With<Movable>)>,
+    mut targets: Query<(&mut Target, &mut Transform), (With<Health>, With<Movable>)>,
+    path: Res<TargetPath>,
     time: Res<Time>,
 ) {
-    for (target, mut transform) in &mut targets {
-        transform.translation.x += target.speed * time.delta_seconds();
+    for (mut target, mut transform) in &mut targets {
+        let delta = target.speed * time.delta_seconds();
+        let delta_target = path.waypoints[target.path_index] - transform.translation.xz();
+
+        if delta_target.length() > delta {
+            // we are still some way off the target, look at the target and yeet yourself that way
+            let movement = delta_target.normalize() * delta;
+            transform.translation += movement.extend(0.0).xzy();
+            let y = transform.translation.y;
+            transform.look_at(path.waypoints[target.path_index].extend(y).xzy(), Vec3::Y);
+        } else {
+            // we have reached the target, increment the index
+            // TODO: Reached end of path, maybe emit an event that we are done
+            target.path_index += 1;
+        }
     }
 }
 
 fn spawn_targets(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     mut assets: ResMut<GameAssets>,
     time: Res<Time>,
 ) {
@@ -64,7 +93,7 @@ fn spawn_targets(
             ..default()
         })
             .insert(Movable)
-            .insert(Target { speed: 1.4 })
+            .insert(Target { speed: 1.4, path_index: 0 })
             .insert(Health { value: 4 })
             .insert(PhysicsBundle::moving_entity(Vec3::new(0.24, 0.24, 0.05)))
             .insert(Name::new("Target"));
@@ -80,6 +109,30 @@ fn target_death(
         if health.value <= 0 {
             death_note.send(TargetDeathEvent);
             commands.entity(target).despawn_recursive();
+        }
+    }
+}
+
+fn check_waypoints(
+    mut commands: Commands,
+    targets: Query<(Entity, &Target)>,
+    path: Res<TargetPath>,
+    mut player: Query<&mut Player>,
+    audio: Res<Audio>,
+    assets: Res<GameAssets>,
+) {
+    for (entity, target) in &targets {
+        if target.path_index >= path.waypoints.len() {
+            // Maybe do this via an event system
+            // we reached the end
+            audio.play(assets.enemy_death_sounds.clone());
+
+            commands.entity(entity).despawn_recursive();
+            let mut player = player.single_mut();
+            if player.damage(1).is_none() {
+                // we returned no lives, means we are at 0 or under lives - aka dead
+                info!("GAME OVER"); //TODO: Do something better
+            }
         }
     }
 }

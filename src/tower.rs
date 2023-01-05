@@ -9,6 +9,14 @@ use crate::physics::PhysicsBundle;
 use crate::states::GameState;
 use crate::target::{Target};
 
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct Tower {
+    pub shooting_timer: Timer,
+    pub bullet_offset: Vec3,
+    pub range: f32,
+}
+
 #[derive(Inspectable, Component, Clone, Copy, Debug)]
 pub enum TowerType {
     Lazer,
@@ -24,6 +32,7 @@ impl TowerType {
                 Tower {
                     shooting_timer: Timer::from_seconds(0.25, TimerMode::Repeating),
                     bullet_offset: Vec3::ZERO,
+                    range: 4.5,
                 }
             ),
             TowerType::Cannon => (
@@ -31,6 +40,7 @@ impl TowerType {
                 Tower {
                     shooting_timer: Timer::from_seconds(0.5, TimerMode::Repeating),
                     bullet_offset: Vec3::ZERO,
+                    range: 4.5,
                 }
             ),
             TowerType::Rock => (
@@ -38,6 +48,7 @@ impl TowerType {
                 Tower {
                     shooting_timer: Timer::from_seconds(0.75, TimerMode::Repeating),
                     bullet_offset: Vec3::ZERO,
+                    range: 4.5,
                 }
             )
         }
@@ -86,12 +97,6 @@ impl Plugin for TowerPlugin {
     }
 }
 
-#[derive(Component, Reflect, Default)]
-#[reflect(Component)]
-pub struct Tower {
-    pub shooting_timer: Timer,
-    pub bullet_offset: Vec3,
-}
 
 fn tower_shooting(
     mut commands: Commands,
@@ -104,8 +109,12 @@ fn tower_shooting(
         tower.shooting_timer.tick(time.delta());
         if tower.shooting_timer.just_finished() {
             let bullet_spawn = transform.translation() + tower.bullet_offset;
+
             let direction = targets
                 .iter()
+                .filter(|target_transform| {
+                    Vec3::distance(target_transform.translation(), bullet_spawn) < tower.range
+                })
                 .min_by_key(|target_transform| {
                     FloatOrd(Vec3::distance(target_transform.translation(), bullet_spawn))
                 })
@@ -121,7 +130,7 @@ fn tower_shooting(
                             ..default()
                         })
                             .insert(Lifetime {
-                                timer: Timer::from_seconds(0.5, TimerMode::Once)
+                                timer: Timer::from_seconds(0.5, TimerMode::Once) // Bullet lifetime
                             })
                             .insert(bullet)
                             .insert(Name::new("Bullet"))
