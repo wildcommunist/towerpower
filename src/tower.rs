@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 use bevy::time::Timer;
 use bevy::utils::FloatOrd;
-use bevy_inspector_egui::Inspectable;
+use bevy_inspector_egui::{Inspectable, RegisterInspectable};
 use bevy_mod_picking::Selection;
 use crate::bullet::{Bullet, Lifetime};
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;
+use crate::states::GameState;
 use crate::target::{Target};
 
 #[derive(Inspectable, Component, Clone, Copy, Debug)]
@@ -75,8 +76,12 @@ impl Plugin for TowerPlugin {
     fn build(&self, app: &mut App) {
         app
             .register_type::<Tower>()
-            .add_system(tower_shooting)
-            .add_system(build_tower)
+            .register_inspectable::<TowerType>()
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(tower_shooting)
+                    .with_system(build_tower)
+            )
         ;
     }
 }

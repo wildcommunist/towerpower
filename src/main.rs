@@ -5,6 +5,8 @@ mod bullet;
 mod physics;
 mod camera;
 mod ui;
+mod states;
+mod menu;
 
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -14,8 +16,10 @@ use bevy_rapier3d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsP
 use crate::bullet::BulletPlugin;
 use crate::camera::CameraPlugin;
 use crate::game_assets::GameAssets;
+use crate::menu::MainMenuPlugin;
 use crate::physics::PhysicsPlugin;
-use crate::target::{Target, TargetPlugin};
+use crate::states::GameState;
+use crate::target::{TargetPlugin};
 use crate::tower::{TowerPlugin};
 use crate::ui::GameUiPlugin;
 
@@ -43,6 +47,9 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugins(DefaultPickingPlugins)
 
+        .add_state(GameState::MainMenu)
+
+        .add_plugin(MainMenuPlugin)
         .add_plugin(CameraPlugin)
         .add_plugin(TowerPlugin)
         .add_plugin(BulletPlugin)
@@ -50,9 +57,8 @@ fn main() {
         .add_plugin(PhysicsPlugin)
         .add_plugin(GameUiPlugin)
 
-        .add_startup_system(spawn_camera)
         .add_startup_system_to_stage(StartupStage::PreStartup, asset_loading)
-        .add_startup_system(spawn_basic_scene)
+        .add_system_set(SystemSet::on_enter(GameState::Gameplay).with_system(spawn_basic_scene))
 
         .run();
 }
@@ -71,18 +77,6 @@ fn asset_loading(
     });
 }
 
-fn spawn_camera(
-    mut commands: Commands
-) {
-    commands.spawn(
-        Camera3dBundle {
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..default()
-        }
-    )
-        .insert(PickingCameraBundle::default())
-        .insert(Name::new("Camera"));
-}
 
 //pbr bundle - Physically base rendering
 /*

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::states::GameState;
 use crate::target::{Health, Target};
 
 pub struct BulletPlugin;
@@ -8,9 +9,11 @@ impl Plugin for BulletPlugin {
         app
             .register_type::<Bullet>()
             .register_type::<Lifetime>()
-            .add_system(move_bullets)
-            .add_system(bullet_despawn)
-            //.add_system(bullet_collision)
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(move_bullets)
+                    .with_system(bullet_despawn)
+            )
         ;
     }
 }

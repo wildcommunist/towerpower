@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;
+use crate::states::GameState;
 
 pub struct TargetPlugin;
 
@@ -9,9 +10,12 @@ impl Plugin for TargetPlugin {
         app
             .register_type::<Target>()
             .register_type::<Health>()
-            .add_system(spawn_targets)
-            .add_system(move_targets)
-            .add_system(target_death)
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(spawn_targets)
+                    .with_system(move_targets)
+                    .with_system(target_death)
+            )
         ;
     }
 }

@@ -2,6 +2,7 @@ use bevy::ecs::query::QuerySingleError;
 use bevy::prelude::*;
 use bevy_mod_picking::Selection;
 use crate::game_assets::GameAssets;
+use crate::states::GameState;
 use crate::tower::{spawn_tower, TowerType};
 
 #[derive(Component)]
@@ -13,8 +14,11 @@ pub struct GameUiPlugin;
 impl Plugin for GameUiPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_system(create_ui_on_selection)
-            .add_system(tower_button_clicked)
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(create_ui_on_selection)
+                    .with_system(tower_button_clicked)
+            )
         ;
     }
 }

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use crate::bullet::Bullet;
+use crate::states::GameState;
 use crate::target::{Health, Target};
 
 #[derive(Bundle)]
@@ -33,7 +34,12 @@ pub struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(bullet_collision_detection);
+        app
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(bullet_collision_detection)
+            )
+        ;
     }
 }
 
