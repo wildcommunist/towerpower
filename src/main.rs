@@ -118,6 +118,30 @@ fn spawn_basic_scene(
             initial: default_collider_color.clone(),
             hovered: Some(selected_collider_color.clone()),
             pressed: Some(selected_collider_color.clone()),
+            selected: Some(selected_collider_color.clone()),
+        })
+        .insert(default_collider_color.clone())
+        .with_children(|commands| {
+            // Tower pedestal
+            commands.spawn(SceneBundle {
+                scene: assets.load("models/pedestal.glb#Scene0"),
+                transform: Transform::from_xyz(0.0, -0.9, 0.0),
+                ..default()
+            })
+                .insert(Name::new("Pedestal"));
+        });
+
+    commands.spawn(SpatialBundle::from_transform(
+        Transform::from_xyz(1.5, 0.8, 0.0)
+    ))
+        .insert(Name::new("Tower_base"))
+        .insert(meshes.add(shape::Capsule::default().into()))
+        .insert(NotShadowCaster)
+        .insert(PickableBundle::default())
+        .insert(Highlighting {
+            initial: default_collider_color.clone(),
+            hovered: Some(selected_collider_color.clone()),
+            pressed: Some(selected_collider_color.clone()),
             selected: Some(selected_collider_color),
         })
         .insert(default_collider_color)

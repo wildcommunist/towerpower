@@ -35,12 +35,28 @@ impl Player {
     pub fn get_lives(&self) -> u32 {
         self.lives
     }
+
+    pub fn spend_funds(&mut self, amount: u32) -> Option<u32> {
+        if let Some(new_bal) = self.money.checked_sub(amount) {
+            self.money = new_bal;
+            return Some(self.money);
+        }
+        None
+    }
+
+    pub fn add_funds(&mut self, amount: u32) -> Option<u32> {
+        if let Some(new_bal) = self.money.checked_add(amount) {
+            self.money = new_bal;
+            return Some(self.money);
+        }
+        None
+    }
 }
 
 fn spawn_player(
     mut commands: Commands
 ) {
-    commands.spawn((Player { money: 0, lives: 5 }, Name::new("Player")));
+    commands.spawn((Player { money: 1, lives: 5 }, Name::new("Player")));
 }
 
 fn give_money_on_kill(
@@ -49,7 +65,7 @@ fn give_money_on_kill(
 ) {
     let mut player = player.single_mut();
     for _event in death_note_events.iter() {
-        player.money += 10;
+        player.add_funds(1).expect("Player overflow error on funds add");
         info!("Kill! Money: {}", player.money);
     }
 }

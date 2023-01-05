@@ -114,8 +114,15 @@ fn tower_button_clicked(
             for (entity, selection, transform) in &selections {
                 if selection.selected() {
                     if player.get_funds() >= button_state.cost {
-                        commands.entity(entity).despawn_recursive();
-                        spawn_tower(&mut commands, &assets, transform.translation, *tower_type);
+                        match player.spend_funds(button_state.cost) {
+                            None => {
+                                warn!("Player balance overflow error");
+                            }
+                            Some(_) => {
+                                commands.entity(entity).despawn_recursive();
+                                spawn_tower(&mut commands, &assets, transform.translation, *tower_type);
+                            }
+                        }
                     } else {
                         info!("Cannot afford {:?} tower, it costs {} but only have {}", tower_type,button_state.cost,player.get_funds());
                     }
