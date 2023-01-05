@@ -7,6 +7,7 @@ mod camera;
 mod ui;
 mod states;
 mod menu;
+mod player;
 
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -18,6 +19,7 @@ use crate::camera::CameraPlugin;
 use crate::game_assets::GameAssets;
 use crate::menu::MainMenuPlugin;
 use crate::physics::PhysicsPlugin;
+use crate::player::PlayerPlugin;
 use crate::states::GameState;
 use crate::target::{TargetPlugin};
 use crate::tower::{TowerPlugin};
@@ -56,6 +58,7 @@ fn main() {
         .add_plugin(TargetPlugin)
         .add_plugin(PhysicsPlugin)
         .add_plugin(GameUiPlugin)
+        .add_plugin(PlayerPlugin)
 
         .add_startup_system_to_stage(StartupStage::PreStartup, asset_loading)
         .add_system_set(SystemSet::on_enter(GameState::Gameplay).with_system(spawn_basic_scene))
@@ -73,7 +76,7 @@ fn asset_loading(
         tower: assets.load("models/tower_1.glb#Scene0"),
         enemy: assets.load("models/enemy.glb#Scene0"),
         mob_spawn_delay: Timer::from_seconds(1.5, TimerMode::Repeating),
-
+        game_font: assets.load("fonts/minecraft_font.ttf"),
     });
 }
 

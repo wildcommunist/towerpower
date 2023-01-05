@@ -8,4 +8,5 @@ pub struct GameAssets {
     pub tower: Handle<Scene>,
     pub enemy: Handle<Scene>,
     pub mob_spawn_delay: Timer,
+    pub game_font: Handle<Font>,
 }

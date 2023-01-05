@@ -3,6 +3,8 @@ use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;
 use crate::states::GameState;
 
+pub struct TargetDeathEvent;
+
 pub struct TargetPlugin;
 
 impl Plugin for TargetPlugin {
@@ -10,6 +12,9 @@ impl Plugin for TargetPlugin {
         app
             .register_type::<Target>()
             .register_type::<Health>()
+
+            .add_event::<TargetDeathEvent>()
+
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(spawn_targets)
@@ -69,9 +74,11 @@ fn spawn_targets(
 fn target_death(
     mut commands: Commands,
     targets: Query<(Entity, &Health), With<Target>>,
+    mut death_note: EventWriter<TargetDeathEvent>,
 ) {
     for (target, health) in &targets {
         if health.value <= 0 {
+            death_note.send(TargetDeathEvent);
             commands.entity(target).despawn_recursive();
         }
     }
