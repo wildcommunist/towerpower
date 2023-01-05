@@ -7,7 +7,16 @@ use crate::states::GameState;
 use crate::tower::{spawn_tower, TowerType};
 
 #[derive(Component)]
-pub struct TowerUIRoot;
+pub struct TowerUiRoot;
+
+#[derive(Component)]
+pub struct GameplayUiRoot;
+
+#[derive(Component)]
+pub struct MoneyUiElement;
+
+#[derive(Component)]
+pub struct LivesUiElement;
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
@@ -22,21 +31,92 @@ impl Plugin for GameUiPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system_set(
+                SystemSet::on_enter(GameState::Gameplay)
+                    .with_system(spawn_gameplay_ui)
+            )
+            .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(create_ui_on_selection)
                     .with_system(tower_button_clicked)
                     .with_system(update_tower_button_states)
                     .with_system(update_tower_button_states.after(create_ui_on_selection)) // Make sure we update the state after the UI has been created
+                    .with_system(update_player_ui)
             )
         ;
     }
+}
+
+fn spawn_gameplay_ui(
+    mut commands: Commands,
+    assets: Res<GameAssets>,
+) {
+    commands.spawn(NodeBundle {
+        style: Style {
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+            position_type: PositionType::Absolute,
+            justify_content: JustifyContent::FlexStart, // Flex start is top left
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        ..default()
+    })
+        .insert(GameplayUiRoot)
+        .with_children(|commands| {
+            commands
+                .spawn(NodeBundle { // This is the row where text components for lives and money will live
+                    style: Style {
+                        size: Size::new(Val::Percent(100.0), Val::Percent(10.0)),
+                        justify_content: JustifyContent::SpaceBetween, // equal space between items
+                        align_items: AlignItems::FlexStart,
+                        align_self: AlignSelf::FlexStart,
+                        flex_direction: FlexDirection::Row, // which way should items go
+                        ..default()
+                    },
+                    ..default()
+                }).with_children(|commands| {
+                commands
+                    .spawn(TextBundle {
+                        style: Style {
+                            margin: UiRect::all(Val::Percent(1.2)),
+                            ..default()
+                        },
+                        text: Text::from_section(
+                            "Funds: XX",
+                            TextStyle {
+                                font: assets.game_font.clone(),
+                                font_size: 28.0,
+                                color: Color::WHITE,
+                            },
+                        ),
+                        ..default()
+                    }).insert(MoneyUiElement);
+
+                commands
+                    .spawn(TextBundle {
+                        style: Style {
+                            margin: UiRect::all(Val::Percent(1.2)),
+                            ..default()
+                        },
+                        text: Text::from_section(
+                            "Lives: XX",
+                            TextStyle {
+                                font: assets.game_font.clone(),
+                                font_size: 28.0,
+                                color: Color::WHITE,
+                            },
+                        ),
+                        ..default()
+                    }).insert(LivesUiElement);
+            });
+        })
+    ;
 }
 
 fn create_ui_on_selection(
     mut commands: Commands,
     assets: Res<AssetServer>,
     selections: Query<&Selection>, //bevy selection crate
-    root: Query<Entity, With<TowerUIRoot>>, // we need to get our ui root so we can (de)spawn it
+    root: Query<Entity, With<TowerUiRoot>>, // we need to get our ui root so we can (de)spawn it
 ) {
     let at_least_one_selected = selections.iter().any(|s| s.selected());
     match root.get_single() {
@@ -77,7 +157,7 @@ fn create_ui(
             },
             ..default()
         })
-        .insert(TowerUIRoot)
+        .insert(TowerUiRoot)
         .insert(Name::new("UI_Root"))
         .with_children(|commands| {
             for i in 0..tower_types.len() {
@@ -147,4 +227,24 @@ fn update_tower_button_states(
             *button_tint = Color::DARK_GRAY.into();
         }
     }
+}
+
+fn update_player_ui(
+    player: Query<&Player>,
+    mut money_ui: Query<&mut Text, (With<MoneyUiElement>, Without<LivesUiElement>)>,
+    mut lives_ui: Query<&mut Text, With<LivesUiElement>>,
+) {
+    let player = player.single();
+    let mut money_ui = money_ui.single_mut();
+    let mut lives_ui = lives_ui.single_mut();
+
+    *money_ui = Text::from_section(
+        format!("Funds: {}", player.get_funds()),
+        money_ui.sections[0].style.clone(),
+    );
+
+    *lives_ui = Text::from_section(
+        format!("Lives: {}", player.get_lives()),
+        lives_ui.sections[0].style.clone(),
+    );
 }
