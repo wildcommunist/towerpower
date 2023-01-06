@@ -1,5 +1,7 @@
+use bevy::app::AppExit;
 use bevy::prelude::*;
 use crate::game_assets::GameAssets;
+use crate::helpers::spawn_button;
 use crate::states::GameState;
 
 pub struct PauseGamePlugin;
@@ -15,6 +17,8 @@ impl Plugin for PauseGamePlugin {
                 SystemSet::on_update(GameState::Pause)
                     .with_system(update)
                     .with_system(process_keyboard_input)
+                    .with_system(exit_button_click)
+                    .with_system(resume_button_click)
             )
         ;
     }
@@ -23,16 +27,26 @@ impl Plugin for PauseGamePlugin {
 #[derive(Component)]
 pub struct PauseUiRoot;
 
+#[derive(Component)]
+pub struct ResumeGameButton;
+
+#[derive(Component)]
+pub struct ExitGameButton;
+
 fn setup_ui(
     mut commands: Commands,
     assets: Res<GameAssets>,
 ) {
+    let exit_button = spawn_button(&mut commands, &assets, "Quit Game", Color::MIDNIGHT_BLUE);
+    commands.entity(exit_button).insert(ExitGameButton);
+
+    let resume_button = spawn_button(&mut commands, &assets, "Resume Game", Color::MIDNIGHT_BLUE);
+    commands.entity(resume_button).insert(ResumeGameButton);
+
     commands.spawn(NodeBundle {
         style: Style {
             size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            justify_content: JustifyContent::SpaceBetween,
-            align_items: AlignItems::FlexStart,
-            align_self: AlignSelf::FlexStart,
+            justify_content: JustifyContent::Center,
             flex_direction: FlexDirection::Column,
             ..default()
         },
@@ -58,6 +72,8 @@ fn setup_ui(
                     ..default()
                 });
         })
+        .add_child(resume_button)
+        .add_child(exit_button)
     ;
 }
 
@@ -74,5 +90,31 @@ fn process_keyboard_input(
         commands.entity(ui_root).despawn_recursive();
         game_state.pop().unwrap();
         keyboard.reset(KeyCode::Escape);
+    }
+}
+
+fn resume_button_click(
+    mut commands: Commands,
+    mut game_state: ResMut<State<GameState>>,
+    interactions: Query<&Interaction, (With<ResumeGameButton>, Changed<Interaction>)>,
+    entity: Query<Entity, With<PauseUiRoot>>,
+) {
+    for interaction in &interactions {
+        if matches!(interaction, Interaction::Clicked) {
+            let ui_root = entity.single();
+            commands.entity(ui_root).despawn_recursive();
+            game_state.pop().unwrap();
+        }
+    }
+}
+
+fn exit_button_click(
+    interactions: Query<&Interaction, (With<ExitGameButton>, Changed<Interaction>)>,
+    mut exit: EventWriter<AppExit>,
+) {
+    for interaction in &interactions {
+        if matches!(interaction, Interaction::Clicked) {
+            exit.send(AppExit);
+        }
     }
 }

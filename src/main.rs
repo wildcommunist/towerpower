@@ -9,6 +9,7 @@ mod states;
 mod menu;
 mod player;
 mod pause;
+mod helpers;
 
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -51,7 +52,7 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugins(DefaultPickingPlugins)
 
-        .add_state(GameState::Gameplay)
+        .add_state(GameState::MainMenu)
 
         .add_plugin(MainMenuPlugin)
         .add_plugin(CameraPlugin)
