@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{PickingCameraBundle, Selection};
+use crate::states::GameState;
 
 const CAMERA_SPEED: f32 = 3.0;
 const CAMERA_ROTATE_SPEED: f32 = 1.65;
@@ -10,8 +11,11 @@ impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_startup_system(spawn_camera)
-            .add_system(camera_controls)
-            .add_system(what_is_selected)
+            .add_system_set(
+                SystemSet::on_update(GameState::Gameplay)
+                    .with_system(camera_controls)
+                    .with_system(what_is_selected)
+            )
         ;
     }
 }

@@ -8,6 +8,7 @@ mod ui;
 mod states;
 mod menu;
 mod player;
+mod pause;
 
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -18,6 +19,7 @@ use crate::bullet::BulletPlugin;
 use crate::camera::CameraPlugin;
 use crate::game_assets::GameAssets;
 use crate::menu::MainMenuPlugin;
+use crate::pause::PauseGamePlugin;
 use crate::physics::PhysicsPlugin;
 use crate::player::PlayerPlugin;
 use crate::states::GameState;
@@ -49,7 +51,7 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugins(DefaultPickingPlugins)
 
-        .add_state(GameState::MainMenu)
+        .add_state(GameState::Gameplay)
 
         .add_plugin(MainMenuPlugin)
         .add_plugin(CameraPlugin)
@@ -59,6 +61,7 @@ fn main() {
         .add_plugin(PhysicsPlugin)
         .add_plugin(GameUiPlugin)
         .add_plugin(PlayerPlugin)
+        .add_plugin(PauseGamePlugin)
 
         .add_startup_system_to_stage(StartupStage::PreStartup, asset_loading)
         .add_system_set(SystemSet::on_enter(GameState::Gameplay).with_system(spawn_basic_scene))

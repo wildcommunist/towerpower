@@ -1,5 +1,6 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use git2::{Error, Repository};
 use crate::game_assets::GameAssets;
 use crate::states::GameState;
 
@@ -56,11 +57,11 @@ fn spawn_main_menu(
                 .spawn(TextBundle {
                     style: Style {
                         align_self: AlignSelf::Center,
-                        margin: UiRect::all(Val::Percent(3.0)),
+                        margin: UiRect::bottom(Val::Percent(20.0)),
                         ..default()
                     },
                     text: Text::from_section(
-                        "Tower Defense tutorial",
+                        "Tower Defense",
                         TextStyle {
                             font: assets.game_font.clone(),
                             font_size: 96.0,
@@ -71,8 +72,38 @@ fn spawn_main_menu(
                 });
         })
         .add_child(start_button)
-        .add_child(exit_button)
-    ;
+        .add_child(exit_button);
+
+    let repo = match Repository::open(".") {
+        Ok(r) => {
+            let head = r.head().unwrap();
+            let commit = head.peel_to_commit().unwrap();
+            let hash = commit.id();
+            format!("{}", hash)
+        }
+        Err(_) => String::from("N/A")
+    };
+
+    commands
+        .spawn(TextBundle {
+            style: Style {
+                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                position_type: PositionType::Absolute,
+                align_content: AlignContent::FlexStart,
+                //align_self: AlignSelf::Center,
+                margin: UiRect::all(Val::Percent(5.0)),
+                ..default()
+            },
+            text: Text::from_section(
+                format!("Commit: {}", repo),
+                TextStyle {
+                    font: assets.game_font.clone(),
+                    font_size: 15.0,
+                    color: Color::WHITE,
+                },
+            ),
+            ..default()
+        });
 }
 
 fn spawn_button(
@@ -84,7 +115,7 @@ fn spawn_button(
     commands
         .spawn(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Percent(65.0), Val::Percent(15.0)),
+                size: Size::new(Val::Px(250.0), Val::Px(100.)),
                 align_self: AlignSelf::Center,
                 justify_content: JustifyContent::Center,
                 margin: UiRect::all(Val::Percent(2.0)),
@@ -105,7 +136,7 @@ fn spawn_button(
                         text,
                         TextStyle {
                             font: assets.game_font.clone(),
-                            font_size: 64.0,
+                            font_size: 32.0,
                             color: Color::BLACK,
                         },
                     ),
@@ -126,7 +157,7 @@ fn start_button_click(
             let root_entity = menu_root.single();
             commands.entity(root_entity).despawn_recursive();
             game_state.set(GameState::Gameplay).unwrap();
-            mouse_input.clone(); // This prevents the "click" from propogating and selecting a tower on screens
+            mouse_input.clear(); // This prevents the "click" from propogating and selecting a tower on screens
         }
     }
 }

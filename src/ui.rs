@@ -35,14 +35,32 @@ impl Plugin for GameUiPlugin {
                     .with_system(spawn_gameplay_ui)
             )
             .add_system_set(
+                SystemSet::on_pause(GameState::Gameplay)
+                    .with_system(destruct_ui)
+            )
+            .add_system_set(
+                SystemSet::on_resume(GameState::Gameplay)
+                    .with_system(destruct_ui)
+            )
+            .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(create_ui_on_selection)
                     .with_system(tower_button_clicked)
+                    .with_system(process_keyboard_input)
                     .with_system(update_tower_button_states)
                     .with_system(update_tower_button_states.after(create_ui_on_selection)) // Make sure we update the state after the UI has been created
                     .with_system(update_player_ui)
             )
         ;
+    }
+}
+
+fn destruct_ui(
+    mut commands: Commands,
+    root: Query<Entity, With<TowerUiRoot>>, // we need to get our ui root so we can (de)spawn it
+) {
+    for tower_ui_root in &root {
+        commands.entity(tower_ui_root).despawn_recursive();
     }
 }
 
@@ -60,7 +78,7 @@ fn spawn_gameplay_ui(
         },
         ..default()
     })
-        .insert(GameplayUiRoot)
+        .insert((Name::new("Game_Ui_Root"), GameplayUiRoot))
         .with_children(|commands| {
             commands
                 .spawn(NodeBundle { // This is the row where text components for lives and money will live
@@ -249,4 +267,14 @@ fn update_player_ui(
         format!("Lives: {}", player.get_lives()),
         lives_ui.sections[0].style.clone(),
     );
+}
+
+fn process_keyboard_input(
+    mut game_state: ResMut<State<GameState>>,
+    mut keyboard: ResMut<Input<KeyCode>>,
+) {
+    if keyboard.pressed(KeyCode::Escape) {
+        game_state.push(GameState::Pause).unwrap();
+        keyboard.reset(KeyCode::Escape);
+    }
 }

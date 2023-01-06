@@ -135,7 +135,6 @@ fn tower_shooting(
                             .insert(bullet)
                             .insert(Name::new("Bullet"))
                             .insert(PhysicsBundle::moving_entity(Vec3::new(0.2, 0.2, 0.2)));
-                        ;
                     });
             }
         }
