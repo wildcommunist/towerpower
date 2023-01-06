@@ -7,6 +7,9 @@ const CAMERA_ROTATE_SPEED: f32 = 1.65;
 
 pub struct CameraPlugin;
 
+#[derive(Component)]
+pub struct MainGameCamera;
+
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app
@@ -25,12 +28,12 @@ fn spawn_camera(
 ) {
     commands.spawn(
         Camera3dBundle {
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(0.0, 15.0, 21.0).looking_at(Vec3::new(0.0, 0.0, 5.0), Vec3::Y),
             ..default()
         }
     )
         .insert(PickingCameraBundle::default())
-        .insert(Name::new("Camera"));
+        .insert((MainGameCamera, Name::new("Camera")));
 }
 
 

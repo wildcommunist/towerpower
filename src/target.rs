@@ -120,7 +120,7 @@ fn spawn_targets(
             .insert(Movable)
             .insert(Target { speed: 1.4, path_index: 0 })
             .insert(Health { value: 4 })
-            .insert(PhysicsBundle::moving_entity(Vec3::new(0.24, 0.24, 0.05)))
+            .insert(PhysicsBundle::moving_entity(Vec3::new(0.24, 0.24, 0.1)))
             .insert(Name::new("Target"));
     }
 }
