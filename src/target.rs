@@ -2,6 +2,7 @@ use bevy::math::Vec3Swizzles;
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use crate::game_assets::GameAssets;
+use crate::gameplay::GameMap;
 use crate::physics::PhysicsBundle;
 use crate::player::Player;
 use crate::states::GameState;
@@ -17,15 +18,6 @@ impl Plugin for TargetPlugin {
             .register_type::<Health>()
 
             .add_event::<TargetDeathEvent>()
-
-            .insert_resource(TargetPath { // load from file perhaps or download from server
-                waypoints: vec![
-                    Vec2::new(6.0, 2.0),
-                    Vec2::new(6.0, 6.0),
-                    Vec2::new(9.0, 9.0), // the final target should subtract player health
-                ]
-            })
-
             .add_system_set(SystemSet::on_enter(GameState::Gameplay)
                 .with_system(show_waypoints)
             )
@@ -63,7 +55,7 @@ pub struct Movable;
 
 fn move_targets(
     mut targets: Query<(&mut Target, &mut Transform), (With<Health>, With<Movable>)>,
-    path: Res<TargetPath>,
+    path: Res<GameMap>,
     time: Res<Time>,
 ) {
     for (mut target, mut transform) in &mut targets {
@@ -88,14 +80,14 @@ fn show_waypoints(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    path: Res<TargetPath>,
+    path: Res<GameMap>,
 ) {
     for wp in &path.waypoints {
         commands.spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
             material: materials.add(Color::rgba(1., 0.063, 0.941, 0.65).into()),
             transform: Transform {
-                translation: Vec3::new(wp.x, 0.2, wp.y),
+                translation: Vec3::new(wp.x, 0., wp.y),
                 ..default()
             },
             ..default()
@@ -141,7 +133,7 @@ fn target_death(
 fn check_waypoints(
     mut commands: Commands,
     targets: Query<(Entity, &Target)>,
-    path: Res<TargetPath>,
+    path: Res<GameMap>,
     mut player: Query<&mut Player>,
     audio: Res<Audio>,
     assets: Res<GameAssets>,

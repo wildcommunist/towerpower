@@ -10,8 +10,8 @@ mod menu;
 mod player;
 mod pause;
 mod helpers;
+mod gameplay;
 
-use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
@@ -19,6 +19,7 @@ use bevy_rapier3d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsP
 use crate::bullet::BulletPlugin;
 use crate::camera::CameraPlugin;
 use crate::game_assets::GameAssets;
+use crate::gameplay::GameplayPlugin;
 use crate::menu::MainMenuPlugin;
 use crate::pause::PauseGamePlugin;
 use crate::physics::PhysicsPlugin;
@@ -32,8 +33,6 @@ pub const WINDOW_WIDTH: f32 = 1920.;
 pub const WINDOW_HEIGHT: f32 = 1080.0;
 pub const GAME_VERSION: &str = "v0.0.1";
 
-#[derive(Component)]
-pub struct GroundPlane;
 
 fn main() {
     App::new()
@@ -64,12 +63,12 @@ fn main() {
         .add_plugin(BulletPlugin)
         .add_plugin(TargetPlugin)
         .add_plugin(PhysicsPlugin)
+        .add_plugin(GameplayPlugin)
         .add_plugin(GameUiPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(PauseGamePlugin)
 
         .add_startup_system_to_stage(StartupStage::PreStartup, asset_loading)
-        .add_system_set(SystemSet::on_enter(GameState::Gameplay).with_system(spawn_basic_scene))
 
         .run();
 }
@@ -88,91 +87,4 @@ fn asset_loading(
         enemy_death_sounds: assets.load("sounds/pop-39222.ogg"),
         tower_place_sound: assets.load("sounds/bricks-104933.ogg"),
     });
-}
-
-
-//pbr bundle - Physically base rendering
-/*
-IMPORTANT! If you request a mutable resources, it that system cannot run in parallel, so only request
-it when needed.
- */
-fn spawn_basic_scene(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    assets: Res<AssetServer>,
-) {
-    let default_collider_color: Handle<StandardMaterial> = materials.add(
-        Color::rgba(0.3, 0.3, 0.3, 0.3).into()
-    );
-    let selected_collider_color: Handle<StandardMaterial> = materials.add(
-        Color::rgba(0.3, 0.9, 0.3, 0.9).into()
-    );
-
-    // Ground plane
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 50.0 })),
-        material: materials.add(Color::rgb(0.67, 0.84, 0.52).into()),
-        ..default()
-    }).insert((Name::new("Ground"), GroundPlane));
-
-    // Create an empty, to store our children
-    commands.spawn(SpatialBundle::from_transform(
-        Transform::from_xyz(0.0, 0.8, 0.0)
-    ))
-        .insert(Name::new("Tower_base"))
-        .insert(meshes.add(shape::Capsule::default().into()))
-        .insert(NotShadowCaster)
-        .insert(PickableBundle::default())
-        .insert(Highlighting {
-            initial: default_collider_color.clone(),
-            hovered: Some(selected_collider_color.clone()),
-            pressed: Some(selected_collider_color.clone()),
-            selected: Some(selected_collider_color.clone()),
-        })
-        .insert(default_collider_color.clone())
-        .with_children(|commands| {
-            // Tower pedestal
-            commands.spawn(SceneBundle {
-                scene: assets.load("models/pedestal.glb#Scene0"),
-                transform: Transform::from_xyz(0.0, -0.9, 0.0),
-                ..default()
-            })
-                .insert(Name::new("Pedestal"));
-        });
-
-    commands.spawn(SpatialBundle::from_transform(
-        Transform::from_xyz(1.5, 0.8, 0.0)
-    ))
-        .insert(Name::new("Tower_base"))
-        .insert(meshes.add(shape::Capsule::default().into()))
-        .insert(NotShadowCaster)
-        .insert(PickableBundle::default())
-        .insert(Highlighting {
-            initial: default_collider_color.clone(),
-            hovered: Some(selected_collider_color.clone()),
-            pressed: Some(selected_collider_color.clone()),
-            selected: Some(selected_collider_color),
-        })
-        .insert(default_collider_color)
-        .with_children(|commands| {
-            // Tower pedestal
-            commands.spawn(SceneBundle {
-                scene: assets.load("models/pedestal.glb#Scene0"),
-                transform: Transform::from_xyz(0.0, -0.9, 0.0),
-                ..default()
-            })
-                .insert(Name::new("Pedestal"));
-        });
-
-    // Light
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 750.,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(10.0, 8.0, 4.0),
-        ..default()
-    }).insert(Name::new("Light"));
 }
