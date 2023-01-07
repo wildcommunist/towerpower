@@ -32,6 +32,9 @@ pub const WINDOW_WIDTH: f32 = 1920.;
 pub const WINDOW_HEIGHT: f32 = 1080.0;
 pub const GAME_VERSION: &str = "v0.0.1";
 
+#[derive(Component)]
+pub struct GroundPlane;
+
 fn main() {
     App::new()
         // Yes! The order of plugins and resources matters
@@ -51,6 +54,7 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugins(DefaultPickingPlugins)
+        .add_plugin(DebugCursorPickingPlugin)
 
         .add_state(GameState::MainMenu)
 
@@ -110,7 +114,7 @@ fn spawn_basic_scene(
         mesh: meshes.add(Mesh::from(shape::Plane { size: 50.0 })),
         material: materials.add(Color::rgb(0.67, 0.84, 0.52).into()),
         ..default()
-    }).insert(Name::new("Plane"));
+    }).insert((Name::new("Ground"), GroundPlane));
 
     // Create an empty, to store our children
     commands.spawn(SpatialBundle::from_transform(

@@ -91,7 +91,6 @@ impl Plugin for TowerPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(tower_shooting)
-                    .with_system(build_tower)
             )
         ;
     }
@@ -136,23 +135,6 @@ fn tower_shooting(
                             .insert(Name::new("Bullet"))
                             .insert(PhysicsBundle::moving_entity(Vec3::new(0.2, 0.2, 0.2)));
                     });
-            }
-        }
-    }
-}
-
-// Legacy code
-fn build_tower(
-    mut commands: Commands,
-    selection: Query<(Entity, &Selection, &Transform)>,
-    keyboard: Res<Input<KeyCode>>,
-    assets: Res<GameAssets>,
-) {
-    if keyboard.just_pressed(KeyCode::Space) {
-        for (entity, selection, transform) in &selection {
-            if selection.selected() {
-                //commands.entity(entity).despawn_recursive();
-                //spawn_tower(&mut commands, &assets, transform.translation);
             }
         }
     }

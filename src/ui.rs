@@ -1,6 +1,7 @@
+use std::collections::hash_set::Intersection;
 use bevy::ecs::query::QuerySingleError;
 use bevy::prelude::*;
-use bevy_mod_picking::Selection;
+use bevy_mod_picking::{PickingEvent, Selection};
 use crate::game_assets::GameAssets;
 use crate::player::Player;
 use crate::states::GameState;
@@ -45,13 +46,27 @@ impl Plugin for GameUiPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
                     .with_system(create_ui_on_selection)
+                    .with_system(interaction_test)
                     .with_system(tower_button_clicked)
                     .with_system(process_keyboard_input)
                     .with_system(update_tower_button_states)
                     .with_system(update_tower_button_states.after(create_ui_on_selection)) // Make sure we update the state after the UI has been created
                     .with_system(update_player_ui)
+
+                // Testing the picking mod
             )
+            .add_system_to_stage(CoreStage::PostUpdate, print_events)
         ;
+    }
+}
+
+pub fn print_events(mut events: EventReader<PickingEvent>) {
+    for event in events.iter() {
+        match event {
+            PickingEvent::Selection(e) => info!("A selection event happened: {:?}", e),
+            PickingEvent::Hover(e) => info!("Egads! A hover event!? {:?}", e),
+            PickingEvent::Clicked(e) => info!("Gee Willikers, it's a click! {:?}", e),
+        }
     }
 }
 
@@ -129,6 +144,9 @@ fn spawn_gameplay_ui(
         })
     ;
 }
+
+fn interaction_test(
+){}
 
 fn create_ui_on_selection(
     mut commands: Commands,
