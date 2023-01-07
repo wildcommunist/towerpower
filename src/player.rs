@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::gameplay::GameMap;
 use crate::states::GameState;
 use crate::target::TargetDeathEvent;
 
@@ -9,7 +10,8 @@ impl Plugin for PlayerPlugin {
         app
             .register_type::<Player>()
             .add_system_set(
-                SystemSet::on_enter(GameState::Gameplay).with_system(spawn_player)
+                SystemSet::on_enter(GameState::Gameplay)
+                    .with_system(spawn_player)
             )
             .add_system_set(
                 SystemSet::on_update(GameState::Gameplay)
@@ -44,6 +46,16 @@ impl Player {
         None
     }
 
+    pub fn set_funds(&mut self, amount: u32) -> u32 {
+        self.money = amount;
+        self.money
+    }
+
+    pub fn set_lives(&mut self, amount: u32) -> u32 {
+        self.lives = amount;
+        self.lives
+    }
+
     pub fn add_funds(&mut self, amount: u32) -> Option<u32> {
         if let Some(new_bal) = self.money.checked_add(amount) {
             self.money = new_bal;
@@ -68,9 +80,10 @@ impl Player {
 }
 
 fn spawn_player(
-    mut commands: Commands
+    mut commands: Commands,
+    map: Res<GameMap>,
 ) {
-    commands.spawn((Player { money: 1, lives: 5 }, Name::new("Player")));
+    commands.spawn((Player { money: map.starting_funds, lives: map.starting_lives }, Name::new("Player")));
 }
 
 fn give_money_on_kill(

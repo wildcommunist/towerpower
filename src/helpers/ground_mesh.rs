@@ -7,7 +7,6 @@ pub struct GameFieldGround {
     pub height: f32,
 }
 
-
 impl From<GameFieldGround> for Mesh {
     fn from(value: GameFieldGround) -> Self {
         let width = value.width / 2.;

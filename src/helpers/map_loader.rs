@@ -1,6 +1,5 @@
 use std::fs;
 use bevy::math::Vec2;
-use anyhow::Context;
 use bevy::prelude::*;
 
 use serde_derive::Deserialize;
@@ -105,7 +104,7 @@ pub struct Layer {
 #[serde(rename_all = "camelCase")]
 pub struct IntGridValue {
     pub value: i64,
-    pub identifier: Value,
+    pub identifier: String,
     pub color: String,
 }
 
@@ -121,22 +120,32 @@ pub struct Entity {
     pub resizable_y: bool,
     pub keep_aspect_ratio: bool,
     pub tile_opacity: i64,
-    pub fill_opacity: i64,
+    pub fill_opacity: f64,
     pub line_opacity: i64,
     pub hollow: bool,
     pub color: String,
     pub render_mode: String,
     pub show_name: bool,
-    pub tileset_id: Value,
+    pub tileset_id: i64,
     pub tile_render_mode: String,
-    pub tile_rect: Value,
+    pub tile_rect: TileRect,
     pub nine_slice_borders: Vec<Value>,
     pub max_count: i64,
     pub limit_scope: String,
     pub limit_behavior: String,
-    pub pivot_x: f64,
-    pub pivot_y: f64,
+    pub pivot_x: i64,
+    pub pivot_y: i64,
     pub field_defs: Vec<Value>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TileRect {
+    pub tileset_uid: i64,
+    pub x: i64,
+    pub y: i64,
+    pub w: i64,
+    pub h: i64,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -318,11 +327,11 @@ pub struct EntityInstance {
     #[serde(rename = "__grid")]
     pub grid: Vec<i64>,
     #[serde(rename = "__pivot")]
-    pub pivot: Vec<f64>,
+    pub pivot: Vec<i64>,
     #[serde(rename = "__tags")]
     pub tags: Vec<Value>,
     #[serde(rename = "__tile")]
-    pub tile: Value,
+    pub tile: Tile,
     #[serde(rename = "__smartColor")]
     pub smart_color: String,
     pub iid: String,
@@ -333,11 +342,22 @@ pub struct EntityInstance {
     pub field_instances: Vec<Value>,
 }
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Tile {
+    pub tileset_uid: i64,
+    pub x: i64,
+    pub y: i64,
+    pub w: i64,
+    pub h: i64,
+}
+
+
 impl GameMap {
     pub fn load(level: &str) -> anyhow::Result<Self> {
         info!("loading map: {}", level);
-        let data = fs::read_to_string(level).context("Failed lo load level data")?;
-        let root_data: Root = serde_json::from_str(&data).context("Failed to read map data")?;
+        let data = fs::read_to_string(level)?;
+        let root_data: Root = serde_json::from_str(&data)?;
         info!("Loaded map {}", root_data.levels[0].identifier);
 
         let map_width = root_data.levels[0].layer_instances[1].c_wid as f32;
@@ -359,8 +379,8 @@ impl GameMap {
         };
 
         Ok(GameMap {
-            starting_lives,
-            starting_funds,
+            starting_lives: starting_lives as u32,
+            starting_funds: starting_funds as u32,
             name: root_data.levels[0].identifier.to_string(),
             width: map_width,
             height: map_height,

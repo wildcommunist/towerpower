@@ -3,6 +3,7 @@ use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy_mod_picking::{Highlighting, PickableBundle};
 use crate::helpers::*;
+use crate::player::Player;
 use crate::states::GameState;
 
 pub struct GameplayPlugin;
@@ -23,8 +24,8 @@ impl Plugin for GameplayPlugin {
 #[derive(Resource, Reflect, Default)]
 #[reflect(Resource)]
 pub struct GameMap {
-    pub starting_lives: f32,
-    pub starting_funds: f32,
+    pub starting_lives: u32,
+    pub starting_funds: u32,
     pub name: String,
     pub width: f32,
     pub height: f32,

@@ -287,8 +287,8 @@
 			"__bgPos": null,
 			"externalRelPath": null,
 			"fieldInstances": [
-				{ "__identifier": "starting_lives", "__value": 5, "__type": "Int", "__tile": null, "defUid": 9, "realEditorValues": [] },
-				{ "__identifier": "starting_funds", "__value": 1, "__type": "Int", "__tile": null, "defUid": 10, "realEditorValues": [] }
+				{ "__identifier": "starting_lives", "__value": 8, "__type": "Int", "__tile": null, "defUid": 9, "realEditorValues": [{ "id": "V_Int", "params": [8] }] },
+				{ "__identifier": "starting_funds", "__value": 2, "__type": "Int", "__tile": null, "defUid": 10, "realEditorValues": [{ "id": "V_Int", "params": [2] }] }
 			],
 			"layerInstances": [
 				{

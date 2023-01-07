@@ -63,10 +63,10 @@ fn main() {
         .add_plugin(BulletPlugin)
         .add_plugin(TargetPlugin)
         .add_plugin(PhysicsPlugin)
-        .add_plugin(GameplayPlugin)
         .add_plugin(GameUiPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(PauseGamePlugin)
+        .add_plugin(GameplayPlugin)
 
         .add_startup_system_to_stage(StartupStage::PreStartup, asset_loading)
 
