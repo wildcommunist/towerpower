@@ -39,11 +39,6 @@ pub struct Target {
     pub path_index: usize,
 }
 
-#[derive(Resource)]
-pub struct TargetPath {
-    waypoints: Vec<Vec2>,
-}
-
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
 pub struct Health {

@@ -1,7 +1,6 @@
 use bevy::pbr::NotShadowCaster;
 use bevy::pbr::wireframe::Wireframe;
 use bevy::prelude::*;
-use bevy::prelude::shape::Cube;
 use bevy_mod_picking::{Highlighting, PickableBundle};
 use crate::states::GameState;
 

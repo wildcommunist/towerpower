@@ -1,6 +1,6 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
-use git2::{Error, Repository};
+use git2::{Repository};
 use crate::game_assets::GameAssets;
 use crate::helpers::spawn_button;
 use crate::states::GameState;

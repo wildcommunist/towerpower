@@ -46,16 +46,6 @@ impl Player {
         None
     }
 
-    pub fn set_funds(&mut self, amount: u32) -> u32 {
-        self.money = amount;
-        self.money
-    }
-
-    pub fn set_lives(&mut self, amount: u32) -> u32 {
-        self.lives = amount;
-        self.lives
-    }
-
     pub fn add_funds(&mut self, amount: u32) -> Option<u32> {
         if let Some(new_bal) = self.money.checked_add(amount) {
             self.money = new_bal;

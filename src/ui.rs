@@ -1,4 +1,3 @@
-use std::collections::hash_set::Intersection;
 use bevy::ecs::query::QuerySingleError;
 use bevy::prelude::*;
 use bevy_mod_picking::{PickingEvent, Selection};
@@ -145,8 +144,7 @@ fn spawn_gameplay_ui(
     ;
 }
 
-fn interaction_test(
-){}
+fn interaction_test() {}
 
 fn create_ui_on_selection(
     mut commands: Commands,

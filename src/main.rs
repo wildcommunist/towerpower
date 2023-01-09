@@ -13,7 +13,7 @@ mod helpers;
 mod gameplay;
 
 use bevy::{
-    pbr::wireframe::{Wireframe, WireframeConfig, WireframePlugin},
+    pbr::wireframe::{WireframePlugin},
     prelude::*,
     render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };

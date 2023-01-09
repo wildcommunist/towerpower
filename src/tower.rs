@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy::time::Timer;
 use bevy::utils::FloatOrd;
 use bevy_inspector_egui::{Inspectable, RegisterInspectable};
-use bevy_mod_picking::Selection;
 use crate::bullet::{Bullet, Lifetime};
 use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;

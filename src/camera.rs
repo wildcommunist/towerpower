@@ -81,6 +81,7 @@ fn what_is_selected(
     for (name, selection) in &selection {
         if selection.selected() {
             // this is what we have selected
+            dbg!(name, "is selected");
         }
     }
 }
