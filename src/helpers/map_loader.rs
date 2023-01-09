@@ -360,12 +360,13 @@ impl GameMap {
         let root_data: Root = serde_json::from_str(&data)?;
         info!("Loaded map {}", root_data.levels[0].identifier);
 
+        let grid_cell_size = root_data.levels[0].layer_instances[1].grid_size as f32 / 4.0;
         let map_width = root_data.levels[0].layer_instances[1].c_wid as f32;
         let map_height = root_data.levels[0].layer_instances[1].c_hei as f32;
 
         let mut waypoints: Vec<Vec2> = Vec::new();
         for entity_wp in &root_data.levels[0].layer_instances[0].entity_instances {
-            waypoints.push(Vec2::new(entity_wp.grid[0] as f32 - (map_width / 2.0), entity_wp.grid[1] as f32 - (map_height / 2.0)))
+            waypoints.push(Vec2::new((entity_wp.grid[0] as f32 * grid_cell_size) + grid_cell_size / 2.0, (entity_wp.grid[1] as f32 * grid_cell_size) + grid_cell_size / 2.0));
         }
 
         let starting_lives = match root_data.levels[0].field_instances.iter().find(|&v| v.identifier == "starting_lives") {
@@ -385,6 +386,7 @@ impl GameMap {
             width: map_width,
             height: map_height,
             waypoints,
+            grid_size: grid_cell_size as u32,
         })
     }
 }

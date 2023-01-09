@@ -18,15 +18,20 @@ pub enum GroundType {
 
 impl From<&GameMap> for Mesh {
     fn from(map: &GameMap) -> Self {
-        let cell_size = 8.0; //TODO: bring that in from the editor
+        let cell_size = map.grid_size as f32; //TODO: bring that in from the editor
 
         let mut vertices: Vec<([f32; 3], [f32; 3], [f32; 2])> = Vec::new();
         let mut indicies: Vec<u32> = Vec::new();
 
-        for x in 0..map.width as i32 {
-            let posx = x as f32 * cell_size;
-            for y in 0..map.height as i32 {
-                let posy = y as f32 * cell_size;
+        //let x_offset = map.width / 2.;
+        let x_offset = 0.;
+        //let y_offset = map.height / 2.;
+        let y_offset = 0.;
+
+        for x in (0..map.width as i32).rev() {
+            let posx = (x as f32 * cell_size) - x_offset;
+            for y in (0..map.height as i32).rev() {
+                let posy = (y as f32 * cell_size) - y_offset;
                 // each cell is made of 4 verticies and 2 triangles
                 // we are assuming the center of the plane will be 0,0
                 // Creating counter clockwise
@@ -44,7 +49,6 @@ impl From<&GameMap> for Mesh {
                 vertices.push(loc_verticies[3]);
 
                 for i in &[1, 0, 2, 3, 2, 0] {
-                    //indicies.push(*i + ((6 * x) as u32 + (6 * y) as u32));
                     indicies.push(*i + vert_index);
                 }
             }

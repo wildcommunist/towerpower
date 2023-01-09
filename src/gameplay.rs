@@ -29,6 +29,7 @@ pub struct GameMap {
     pub width: f32,
     pub height: f32,
     pub waypoints: Vec<Vec2>,
+    pub grid_size: u32,
 }
 
 #[derive(Component)]
