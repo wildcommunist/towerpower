@@ -51,6 +51,9 @@ pub struct Health {
 }
 
 #[derive(Component)]
+pub struct Waypoints;
+
+#[derive(Component)]
 pub struct Movable;
 
 fn move_targets(
@@ -93,7 +96,7 @@ fn show_waypoints(
             ..default()
         })
             .insert(NotShadowCaster)
-            .insert(Name::new("_waypoint"));
+            .insert(Name::new(format!("waypoint_{}_{}", wp.x, wp.y)));
     }
 }
 
@@ -101,12 +104,14 @@ fn spawn_targets(
     mut commands: Commands,
     mut assets: ResMut<GameAssets>,
     time: Res<Time>,
+    path: Res<GameMap>,
 ) {
+    let spawn = Vec3::new(path.waypoints[0].x, 0.1, path.waypoints[0].y);
     assets.mob_spawn_delay.tick(time.delta());
     if assets.mob_spawn_delay.just_finished() {
         commands.spawn(SceneBundle {
             scene: assets.enemy.clone(),
-            transform: Transform::from_xyz(-2.0, 0.2, 1.5),
+            transform: Transform::from_xyz(spawn.x, spawn.y, spawn.z),
             ..default()
         })
             .insert(Movable)

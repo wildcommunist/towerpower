@@ -12,7 +12,11 @@ mod pause;
 mod helpers;
 mod gameplay;
 
-use bevy::prelude::*;
+use bevy::{
+    pbr::wireframe::{Wireframe, WireframeConfig, WireframePlugin},
+    prelude::*,
+    render::{render_resource::WgpuFeatures, settings::WgpuSettings},
+};
 use bevy_mod_picking::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
@@ -48,6 +52,11 @@ fn main() {
             },
             ..default()
         }))
+        .insert_resource(WgpuSettings {
+            features: WgpuFeatures::POLYGON_MODE_LINE,
+            ..default()
+        })
+        .add_plugin(WireframePlugin)
         .add_plugin(WorldInspectorPlugin::new())
 
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
@@ -55,7 +64,7 @@ fn main() {
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DebugCursorPickingPlugin)
 
-        .add_state(GameState::MainMenu)
+        .add_state(GameState::Gameplay)
 
         .add_plugin(MainMenuPlugin)
         .add_plugin(CameraPlugin)

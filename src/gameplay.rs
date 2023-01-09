@@ -1,9 +1,8 @@
-use anyhow::{anyhow, Context};
 use bevy::pbr::NotShadowCaster;
+use bevy::pbr::wireframe::Wireframe;
 use bevy::prelude::*;
+use bevy::prelude::shape::Cube;
 use bevy_mod_picking::{Highlighting, PickableBundle};
-use crate::helpers::*;
-use crate::player::Player;
 use crate::states::GameState;
 
 pub struct GameplayPlugin;
@@ -71,12 +70,14 @@ fn spawn_basic_scene(
         Color::rgba(0.3, 0.9, 0.3, 0.9).into()
     );
 
+    let map = map.into_inner();
+
     // Ground plane
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(GameFieldGround { width: map.width, height: map.height })),
+        mesh: meshes.add(Mesh::from(map)),
         material: materials.add(Color::rgb(0.67, 0.84, 0.52).into()),
         ..default()
-    }).insert((Name::new("Ground"), GroundPlane));
+    }).insert((Name::new("Ground"), GroundPlane, Wireframe));
 
     // Create an empty, to store our children
     commands.spawn(SpatialBundle::from_transform(
