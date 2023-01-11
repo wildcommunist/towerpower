@@ -11,6 +11,7 @@ mod player;
 mod pause;
 mod helpers;
 mod gameplay;
+mod weapons;
 
 use bevy::{
     pbr::wireframe::{WireframePlugin},

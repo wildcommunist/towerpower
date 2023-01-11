@@ -7,6 +7,7 @@ use crate::game_assets::GameAssets;
 use crate::physics::PhysicsBundle;
 use crate::states::GameState;
 use crate::target::{Target};
+use crate::weapons::{Laser, LineMaterial};
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
@@ -85,6 +86,7 @@ pub struct TowerPlugin;
 impl Plugin for TowerPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_plugin(MaterialPlugin::<LineMaterial>::default())
             .register_type::<Tower>()
             .register_inspectable::<TowerType>()
             .add_system_set(
@@ -147,7 +149,8 @@ pub fn spawn_tower(
 ) -> Entity {
     let (ts, tower) = tower_type.get_tower(assets);
     info!("Spawning {:?} tower", tower_type);
-    commands
+
+    let t_id = commands
         .spawn(SpatialBundle::from_transform(
             Transform::from_translation(position)
         ))
@@ -167,5 +170,12 @@ pub fn spawn_tower(
                 ..default()
             })
                 .insert(Name::new("Tower base"));
-        }).id()
+        }).id();
+    match tower_type {
+        TowerType::Lazer => {
+            commands.entity(t_id).insert(Laser::default());
+        }
+        _ => {}
+    }
+    t_id
 }

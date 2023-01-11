@@ -61,6 +61,7 @@ fn move_targets(
         let delta_target = path.waypoints[target.path_index] - transform.translation.xz();
 
         if delta_target.length() > delta {
+
             // we are still some way off the target, look at the target and yeet yourself that way
             let movement = delta_target.normalize() * delta;
             transform.translation += movement.extend(0.0).xzy();
@@ -80,19 +81,23 @@ fn show_waypoints(
     mut materials: ResMut<Assets<StandardMaterial>>,
     path: Res<GameMap>,
 ) {
-    for wp in &path.waypoints {
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
-            material: materials.add(Color::rgba(1., 0.063, 0.941, 0.65).into()),
-            transform: Transform {
-                translation: Vec3::new(wp.x, 0., wp.y),
+    commands.spawn(SpatialBundle {
+        ..default()
+    }).with_children(|commands| {
+        for wp in &path.waypoints {
+            commands.spawn(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
+                material: materials.add(Color::rgba(1., 0.063, 0.941, 0.65).into()),
+                transform: Transform {
+                    translation: Vec3::new(wp.x, 0., wp.y),
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
-        })
-            .insert(NotShadowCaster)
-            .insert(Name::new(format!("waypoint_{}_{}", wp.x, wp.y)));
-    }
+            })
+                .insert(NotShadowCaster)
+                .insert(Name::new(format!("waypoint_{}_{}", wp.x, wp.y)));
+        }
+    }).insert(Name::new("waypoints"));
 }
 
 fn spawn_targets(
